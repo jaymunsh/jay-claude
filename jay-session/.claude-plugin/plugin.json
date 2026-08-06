@@ -1,7 +1,7 @@
 {
   "name": "jay-session",
   "description": "세션 인계(handoff)와 개발일지(devlog)로 컨텍스트를 세션 경계 너머로 옮긴다. /clear 직후 자동 인계, 턴 단위 자동 기록, 결정 이력 검색.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "author": {
     "name": "jaymunsh"
   }
