@@ -51,7 +51,7 @@ Two commands you type, and one thing that happens on its own.
     It also hands you a prompt to copy:
     ┌──────────────────────────────────────────────┐
     │ read .claude/session/handoff-20260807-1430.md│
-    │ verify against git status, and continue      │
+    │ verify it, and continue                      │
     └──────────────────────────────────────────────┘
 
   > /clear                     ← you type this yourself
@@ -61,9 +61,9 @@ Two commands you type, and one thing that happens on its own.
 
   > paste the prompt above   or just   "keep going"
 
-    Claude checks git status to confirm the handoff is
-    still accurate, briefs you in a few lines, and
-    picks up at the next task.
+    Claude confirms the handoff is still accurate,
+    briefs you in a few lines, and picks up at the
+    next task.
 ```
 
 **Either input works.**
@@ -73,7 +73,7 @@ Two commands you type, and one thing that happens on its own.
 
 The filename carries a timestamp, so you can't memorize it and can't look it up once the conversation is gone. That's why `/jay-new` gives you the prompt **with the real filename already in it** — you just copy it.
 
-> **A git repository isn't required.** Outside one, the prompt drops the "verify against git status" clause and the handoff omits its branch and uncommitted-changes fields. State is confirmed by running the handoff's own re-verify command instead.
+> **A git repository isn't required.** The prompt never mentions git — it just says "verify it," and Claude picks the check that fits: `git status` and `git log` inside a repo, the handoff's own re-verify command outside one. Outside a repo the handoff also omits its branch and uncommitted-changes fields.
 
 **What you still do yourself:** type `/clear`, and send a first message in the new session. A session waits for input; loading context doesn't make Claude speak first.
 
