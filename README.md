@@ -19,9 +19,15 @@ claude plugin marketplace add jaymunsh/jay-claude
 claude plugin install jay-session@jay-claude
 ```
 
-Then restart Claude Code — commands and hooks load at session start.
+The first command clones this repository; the second installs the plugin from it. Then restart Claude Code — commands and hooks load at session start.
 
 Requires `python3`, which ships with macOS and most Linux distributions. Works in any project; you install it once, not per repository.
+
+To update later:
+
+```bash
+claude plugin marketplace update jay-claude
+```
 
 ---
 
