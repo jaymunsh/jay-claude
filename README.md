@@ -27,7 +27,10 @@ To update later:
 
 ```bash
 claude plugin marketplace update jay-claude
+claude plugin update jay-session@jay-claude
 ```
+
+The first line refreshes the cloned repository; the second refreshes what is actually installed. Run both, then restart.
 
 ---
 

@@ -27,7 +27,10 @@ claude plugin install jay-session@jay-claude
 
 ```bash
 claude plugin marketplace update jay-claude
+claude plugin update jay-session@jay-claude
 ```
+
+첫 줄은 저장소 clone만 갱신하고, 설치본은 두 번째 줄이 갱신합니다. 둘 다 돌린 뒤 재시작하세요.
 
 ---
 
