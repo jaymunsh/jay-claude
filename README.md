@@ -175,21 +175,12 @@ Three hooks, one script.
 | Hook | Fires when | Does |
 |---|---|---|
 | `Stop` | Every turn ends | Appends to the devlog, rotates monthly. Exits instantly if the devlog is off |
-| `SessionStart` (`clear`, `compact`) | A new session after clearing | Injects a handoff written in the last 30 minutes |
+| `SessionStart` (`clear`, `compact`) | A new session after clearing | Injects the newest handoff along with its age |
 | `PreCompact` | Context is about to be compacted | Records where the uncompacted transcript lives |
 
-**The 30-minute window** is what keeps auto-resume from being noisy. Writing a handoff *is* the signal that you intend to continue, so a handoff from last week never gets dragged into an unrelated session.
+**There's no time limit.** Instead the handoff arrives labeled with how old it is — "방금" (just now), "5시간 전" (5 hours ago), "31일 전" (31 days ago). If it's more than a day old, Claude confirms you actually mean to resume that work before diving in, since you may have cleared in order to start something unrelated.
 
-That window applies to **auto-injection after `/clear` and nothing else**:
-
-| | Affected by the 30 minutes? |
-|---|---|
-| Auto-injection after `/clear` | **Yes** — an older handoff isn't injected |
-| The copied prompt | No. Paste it days later and it still works |
-| Resuming by just asking | No |
-| `/jay-new`, devlog | Unrelated |
-
-So picking work back up after a long gap isn't a problem — paste the prompt, or say "continue from last time". Only the automatic injection stops.
+There's deliberately no cutoff constant. A "handoffs expire after N minutes" rule is one more thing you'd have to remember, and whether a document is stale is a judgment the age already supports.
 
 **`PreCompact` saves a path, not a snapshot,** on purpose. Compaction only clears the model's context — the transcript file stays on disk. What you need afterwards is a pointer to it, not a copy of it.
 

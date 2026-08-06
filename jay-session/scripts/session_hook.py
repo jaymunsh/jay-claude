@@ -12,12 +12,11 @@ import json
 import os
 import re
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta  # timedelta: describe_age 인자 타입
 from pathlib import Path
 
 EDIT_TOOLS = {"Edit", "Write", "NotebookEdit", "MultiEdit"}
 SYSTEM_TAG = re.compile(r"<(system-reminder|command-[a-z-]+|local-command-[a-z-]+)>.*?</\1>", re.S)
-RESUME_WINDOW = timedelta(minutes=30)  # 이보다 오래된 handoff는 "이어서 할 일"로 보지 않는다
 
 
 def session_dir(data):
@@ -158,22 +157,38 @@ def on_precompact(data):
     )
 
 
+def describe_age(delta):
+    minutes = int(delta.total_seconds() // 60)
+    if minutes < 60:
+        return "방금"
+    if minutes < 60 * 24:
+        return f"{minutes // 60}시간 전"
+    return f"{minutes // (60 * 24)}일 전"
+
+
 def on_session_start(data):
-    """/clear 직후, 방금 쓴 handoff 가 있으면 새 세션에 바로 물려준다."""
+    """/clear 직후, 가장 최근 handoff 를 새 세션에 물려준다.
+
+    시간 제한을 두지 않는 대신 문서가 얼마나 오래됐는지를 함께 넘긴다.
+    임의의 컷오프는 사용자가 외워야 할 규칙을 하나 늘릴 뿐이고, 오래된 문서인지는
+    나이를 보고 판단하면 되는 일이다.
+    """
     if data.get("source") not in ("clear", "compact"):
         return
     files = sorted(session_dir(data).glob("handoff-*.md"), key=lambda p: p.stat().st_mtime)
     if not files:
         return
     latest = files[-1]
-    if datetime.now() - datetime.fromtimestamp(latest.stat().st_mtime) > RESUME_WINDOW:
-        return  # 오래된 인계 문서를 무관한 세션에 끌고 들어오지 않는다
+    age = describe_age(datetime.now() - datetime.fromtimestamp(latest.stat().st_mtime))
     print(json.dumps({"hookSpecificOutput": {
         "hookEventName": "SessionStart",
         "additionalContext": (
-            f"이전 세션에서 작성된 인계 문서입니다 ({latest}). 이어서 진행하세요.\n"
-            "먼저 git status 로 문서가 지금도 유효한지 확인하고, 3~5줄로 브리핑한 뒤 "
-            "'다음에 할 일' 1번부터 시작할지 물어보세요.\n\n"
+            f"이전 세션의 인계 문서입니다 ({latest}, {age} 작성).\n"
+            "git 저장소면 git status / git log 로 이 문서가 지금도 유효한지 먼저 확인하세요. "
+            "인계 문서는 쓰인 시점의 스냅샷이라 그 사이 다른 세션이 작업을 진행했을 수 있습니다.\n"
+            f"검증 후 3~5줄로 브리핑하고 '다음에 할 일' 1번부터 시작할지 물어보세요. "
+            f"다만 이 문서는 {age} 것이므로, 하루 이상 지났다면 사용자가 정말 이 작업을 "
+            "이어서 하려는 게 맞는지부터 확인하세요 — 무관한 작업을 하려고 /clear 했을 수도 있습니다.\n\n"
             "---\n" + latest.read_text()
         ),
     }}))
@@ -221,6 +236,11 @@ def selftest():
         assert log.read_text() == "## 이번달\n", log.read_text()
         append_devlog(log, "## 또 이번달\n", now=datetime(2026, 8, 7))
         assert "지난달" not in log.read_text() and "또 이번달" in log.read_text()
+
+    assert describe_age(timedelta(minutes=3)) == "방금"
+    assert describe_age(timedelta(minutes=59)) == "방금"
+    assert describe_age(timedelta(hours=5)) == "5시간 전"
+    assert describe_age(timedelta(days=32, hours=2)) == "32일 전"
     print("ok")
 
 
