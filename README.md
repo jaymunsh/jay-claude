@@ -70,6 +70,8 @@ Two commands you type, and one thing that happens on its own.
 
 The filename carries a timestamp, so you can't memorize it and can't look it up once the conversation is gone. That's why `/jay-new` gives you the prompt **with the real filename already in it** — you just copy it.
 
+> **A git repository isn't required.** Outside one, the prompt drops the "verify against git status" clause and the handoff omits its branch and uncommitted-changes fields. State is confirmed by running the handoff's own re-verify command instead.
+
 **What you still do yourself:** type `/clear`, and send a first message in the new session. A session waits for input; loading context doesn't make Claude speak first.
 
 ### Why `/clear` isn't automatic
