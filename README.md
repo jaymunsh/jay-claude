@@ -144,13 +144,27 @@ Nothing until you ask for it. `/jay-new` creates the directory on first use, and
 
 ```
 <your project>/.claude/session/
-├── handoff-20260807-1430.md   # accumulates; the newest is used
+├── handoff-20260807-1430.md   # up to 10 kept
+├── handoff-20260807-1105.md
 ├── devlog.md                  # current month — its existence is the on/off switch
 ├── devlog-2026-07.md          # previous months, rotated automatically
 └── .devlog-state              # dedup cursor for the hook
 ```
 
 The first time this directory is created you'll be asked once whether to add `.claude/session/` to `.gitignore`. Default is yes: it's a personal workflow trail that duplicates your commit log, and the devlog grows every turn and would pollute diffs. Say no if you want to share handoffs with your team.
+
+### Data lifecycle
+
+| What | Policy | Why |
+|---|---|---|
+| **Handoffs** | Keep the newest **10**; older ones are removed when a new one is written | Resuming only ever reads the latest one. Beyond that they just pile up |
+| **Devlog** | **Kept forever**, only split by month | The value of a devlog is in the old entries. There's no reason to delete them |
+
+**The devlog is not one file per day.** Entries accumulate inside a single file as `## 2026-08-07 14:30 — ...`, and only when the month changes does everything so far get moved to `devlog-2026-07.md`.
+
+Nothing ever merges — it only ever splits. Searches glob `devlog*.md` and cover everything at once, so the split costs you nothing while keeping any single file from growing without bound.
+
+If losing old handoffs bothers you, leave `.claude/session/` out of `.gitignore` and commit it — deleted ones then survive in git history.
 
 ---
 
@@ -165,6 +179,17 @@ Three hooks, one script.
 | `PreCompact` | Context is about to be compacted | Records where the uncompacted transcript lives |
 
 **The 30-minute window** is what keeps auto-resume from being noisy. Writing a handoff *is* the signal that you intend to continue, so a handoff from last week never gets dragged into an unrelated session.
+
+That window applies to **auto-injection after `/clear` and nothing else**:
+
+| | Affected by the 30 minutes? |
+|---|---|
+| Auto-injection after `/clear` | **Yes** — an older handoff isn't injected |
+| The copied prompt | No. Paste it days later and it still works |
+| Resuming by just asking | No |
+| `/jay-new`, devlog | Unrelated |
+
+So picking work back up after a long gap isn't a problem — paste the prompt, or say "continue from last time". Only the automatic injection stops.
 
 **`PreCompact` saves a path, not a snapshot,** on purpose. Compaction only clears the model's context — the transcript file stays on disk. What you need afterwards is a pointer to it, not a copy of it.
 
