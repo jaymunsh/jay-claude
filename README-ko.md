@@ -19,7 +19,7 @@ claude plugin marketplace add jaymunsh/jay-claude
 claude plugin install jay-session@jay-claude
 ```
 
-첫 명령이 이 저장소를 clone 하고, 두 번째가 거기서 플러그인을 설치합니다. 설치 후 Claude Code를 재시작하세요 — 명령어와 훅은 세션 시작 시점에 로드됩니다.
+첫 명령이 이 저장소를 clone 하고, 두 번째가 거기서 플러그인을 설치합니다. 설치 후 `/reload-plugins` 를 치세요 — 명령어와 훅은 이때 로드되고, `/clear` 로는 다시 로드되지 않습니다.
 
 `python3` 이 필요하며 macOS와 대부분의 리눅스에 기본 포함돼 있습니다. **한 번만 설치하면 모든 프로젝트에서 쓸 수 있습니다** — 프로젝트마다 설치할 필요 없습니다.
 
@@ -30,7 +30,7 @@ claude plugin marketplace update jay-claude
 claude plugin update jay-session@jay-claude
 ```
 
-첫 줄은 저장소 clone만 갱신하고, 설치본은 두 번째 줄이 갱신합니다. 둘 다 돌린 뒤 재시작하세요.
+첫 줄은 저장소 clone만 갱신하고, 설치본은 두 번째 줄이 갱신합니다. 둘 다 돌린 뒤 `/reload-plugins` 를 치세요.
 
 ---
 

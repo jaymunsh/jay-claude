@@ -19,7 +19,7 @@ claude plugin marketplace add jaymunsh/jay-claude
 claude plugin install jay-session@jay-claude
 ```
 
-The first command clones this repository; the second installs the plugin from it. Then restart Claude Code — commands and hooks load at session start.
+The first command clones this repository; the second installs the plugin from it. Then run `/reload-plugins` — commands and hooks are loaded at that point, and `/clear` does not reload them.
 
 Requires `python3`, which ships with macOS and most Linux distributions. Works in any project; you install it once, not per repository.
 
@@ -30,7 +30,7 @@ claude plugin marketplace update jay-claude
 claude plugin update jay-session@jay-claude
 ```
 
-The first line refreshes the cloned repository; the second refreshes what is actually installed. Run both, then restart.
+The first line refreshes the cloned repository; the second refreshes what is actually installed. Run both, then `/reload-plugins`.
 
 ---
 
