@@ -1,0 +1,13 @@
+{
+  "name": "jay-claude",
+  "owner": {
+    "name": "jaymunsh"
+  },
+  "plugins": [
+    {
+      "name": "jay-session",
+      "source": "./jay-session",
+      "description": "세션 인계(handoff)와 개발일지(devlog)로 컨텍스트를 세션 경계 너머로 옮긴다."
+    }
+  ]
+}
