@@ -180,7 +180,7 @@ Three hooks, one script.
 | Hook | Fires when | Does |
 |---|---|---|
 | `Stop` | Every turn ends | Appends to the devlog, rotates monthly. Exits instantly if the devlog is off |
-| `SessionStart` (`clear`, `compact`) | A new session after clearing | Injects the newest handoff along with its age |
+| `SessionStart` (`clear`, `compact`) | Right after the conversation is discarded | Injects the newest handoff along with its age. On `clear` it briefs you and asks where to start; on `compact` it lands as reference only, so work in flight isn't interrupted |
 | `PreCompact` | Context is about to be compacted | Records where the uncompacted transcript lives |
 
 **There's no time limit.** Instead the handoff arrives labeled with how old it is — "방금" (just now), "5시간 전" (5 hours ago), "31일 전" (31 days ago). If it's more than a day old, Claude confirms you actually mean to resume that work before diving in, since you may have cleared in order to start something unrelated.

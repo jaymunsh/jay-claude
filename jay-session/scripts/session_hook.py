@@ -167,29 +167,44 @@ def describe_age(delta):
 
 
 def on_session_start(data):
-    """/clear 직후, 가장 최근 handoff 를 새 세션에 물려준다.
+    """대화가 지워진 직후, 가장 최근 handoff 를 새 컨텍스트에 물려준다.
 
     시간 제한을 두지 않는 대신 문서가 얼마나 오래됐는지를 함께 넘긴다.
     임의의 컷오프는 사용자가 외워야 할 규칙을 하나 늘릴 뿐이고, 오래된 문서인지는
     나이를 보고 판단하면 되는 일이다.
+
+    clear 와 compact 는 상황이 다르다. clear 뒤에는 아무것도 없으니 브리핑하고
+    다음 할 일을 물어야 하지만, compact 뒤에는 압축 요약이 이미 있고 작업이
+    진행 중이다. 거기서 처음부터 브리핑하면 하던 일을 끊는다.
     """
-    if data.get("source") not in ("clear", "compact"):
+    source = data.get("source")
+    if source not in ("clear", "compact"):
         return
     files = sorted(session_dir(data).glob("handoff-*.md"), key=lambda p: p.stat().st_mtime)
     if not files:
         return
     latest = files[-1]
     age = describe_age(datetime.now() - datetime.fromtimestamp(latest.stat().st_mtime))
+    if source == "clear":
+        guidance = (
+            f"검증 후 3~5줄로 브리핑하고 '다음에 할 일' 1번부터 시작할지 물어보세요. "
+            f"다만 이 문서는 {age} 것이므로, 하루 이상 지났다면 사용자가 정말 이 작업을 "
+            "이어서 하려는 게 맞는지부터 확인하세요 — 무관한 작업을 하려고 /clear 했을 수도 있습니다."
+        )
+    else:
+        guidance = (
+            "컨텍스트 압축 직후라 하던 작업이 그대로 이어지는 중입니다. "
+            "이 문서는 압축 요약이 흘린 것을 메우는 참고 자료이지 새 지시가 아닙니다. "
+            "브리핑하거나 다음 할 일을 다시 묻지 말고, 하던 일을 계속하세요. "
+            "요약과 이 문서가 어긋나면 그때만 짚으세요."
+        )
     print(json.dumps({"hookSpecificOutput": {
         "hookEventName": "SessionStart",
         "additionalContext": (
             f"이전 세션의 인계 문서입니다 ({latest}, {age} 작성).\n"
             "git 저장소면 git status / git log 로 이 문서가 지금도 유효한지 먼저 확인하세요. "
             "인계 문서는 쓰인 시점의 스냅샷이라 그 사이 다른 세션이 작업을 진행했을 수 있습니다.\n"
-            f"검증 후 3~5줄로 브리핑하고 '다음에 할 일' 1번부터 시작할지 물어보세요. "
-            f"다만 이 문서는 {age} 것이므로, 하루 이상 지났다면 사용자가 정말 이 작업을 "
-            "이어서 하려는 게 맞는지부터 확인하세요 — 무관한 작업을 하려고 /clear 했을 수도 있습니다.\n\n"
-            "---\n" + latest.read_text()
+            + guidance + "\n\n---\n" + latest.read_text()
         ),
     }}))
 
