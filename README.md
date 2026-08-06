@@ -45,21 +45,32 @@ Two commands you type, and one thing that happens on its own.
     writes .claude/session/handoff-20260807-1430.md,
     and asks only about what it genuinely can't infer.
 
+    It also hands you a prompt to copy:
+    ┌──────────────────────────────────────────────┐
+    │ read .claude/session/handoff-20260807-1430.md│
+    │ verify against git status, and continue      │
+    └──────────────────────────────────────────────┘
+
   > /clear                     ← you type this yourself
 
 ── Session 2 ──────────────────────────────────
   (the handoff is already loaded into context)
 
-  > 이어서 해줘  /  keep going  /  anything at all
+  > paste the prompt above   or just   "keep going"
 
     Claude checks git status to confirm the handoff is
     still accurate, briefs you in a few lines, and
     picks up at the next task.
 ```
 
-**What you no longer have to do:** dig up the handoff filename, re-explain what you were building, or paste a prepared prompt. It's already in context. Your first message can be two words.
+**Either input works.**
 
-**What you still do:** type `/clear` yourself, and send *some* first message in the new session. A session waits for input — loading context doesn't make Claude speak first. The point isn't zero keystrokes; it's that those keystrokes no longer have to carry any information.
+- **The copied prompt** — it has the file path baked in, so that one line stands on its own. It works even if the hook didn't fire for any reason.
+- **"keep going"** — the hook already put the handoff in context, so two words are enough.
+
+The filename carries a timestamp, so you can't memorize it and can't look it up once the conversation is gone. That's why `/jay-new` gives you the prompt **with the real filename already in it** — you just copy it.
+
+**What you still do yourself:** type `/clear`, and send a first message in the new session. A session waits for input; loading context doesn't make Claude speak first.
 
 ### Why `/clear` isn't automatic
 
