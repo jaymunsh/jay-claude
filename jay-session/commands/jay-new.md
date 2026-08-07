@@ -6,7 +6,7 @@ allowed-tools: Bash, Read, Write, Glob, Grep, AskUserQuestion
 
 `session-manager` 스킬의 "1. 인계(handoff)" 절차를 그대로 수행한다.
 
-`.claude/session/` 이 없으면 그 자리에서 만든다. 이 명령을 친 것 자체가 "여기에 인계 문서를 남겨라"는 의사표시라, 별도 활성화 단계를 요구하지 않는다. 다만 `.gitignore` 에 `.claude/session/` 이 없으면 **한 번만** 묻는다 — 저장소에 뭘 커밋할지는 사용자가 정할 몫이다.
+`.claude/session/` 이 없으면 그 자리에서 만든다. 이 명령을 친 것 자체가 "여기에 인계 문서를 남겨라"는 의사표시라, 별도 활성화 단계를 요구하지 않는다. 다만 git 저장소이면서 `.gitignore` 에 `.claude/session/` 이 없으면 **한 번만** 묻는다 — 저장소에 뭘 커밋할지는 사용자가 정할 몫이다. git 저장소가 아니면 묻지 않는다. 없던 `.gitignore` 를 만들 뿐이다.
 
 devlog 자동 기록은 여기서 켜지 않는다. 매 턴 파일이 쌓이는 동작이라 명시적 동의가 필요하고, 그건 `/jay-init` 의 몫이다.
 

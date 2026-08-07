@@ -27,7 +27,13 @@ git status --short                 # 미커밋
 git branch --show-current
 ```
 
-git 저장소가 아니면 구조는 `ls -R`(숨김·의존성 폴더 제외)로 대신하고 "최근 흐름" 절은 통째로 뺀다. 없는 절을 빈칸으로 남기지 않는다.
+git 저장소가 아니면(`git ls-files` 가 `fatal: not a git repository` 로 죽는다) 구조는 아래로 대신하고 "최근 흐름" 절은 통째로 뺀다. 없는 절을 빈칸으로 남기지 않는다.
+
+```bash
+find . -maxdepth 3 \( -name '.?*' -o -name node_modules -o -name dist -o -name build -o -name target -o -name __pycache__ \) -prune -o -print
+```
+
+`ls -R` 을 쓰지 않는 이유: 제외 기능이 없어서 `node_modules` 를 통째로 뱉는다. 큰 프로젝트에서 그 출력 하나가 컨텍스트를 태운다. `-name '.?*'` 인 것도 이유가 있다 — `'.*'` 로 쓰면 현재 디렉터리 `.` 자체가 걸려 **결과가 통째로 빈다.**
 
 그리고 `README.md`, `CLAUDE.md` / `AGENTS.md`, 패키지 매니페스트(`package.json`, `pyproject.toml`, `Cargo.toml` 등)를 읽는다. 실행·테스트 명령은 대부분 여기 적혀 있다. **추측해서 쓰지 말고 실제로 확인한 명령만 적는다.**
 
