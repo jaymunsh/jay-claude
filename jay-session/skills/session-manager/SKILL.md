@@ -1,11 +1,11 @@
 ---
 name: session-manager
-description: 세션 인계(handoff) 문서 생성, 새 세션 복귀 브리핑, devlog 개발일지 기록/검색. Use whenever the user is about to run /clear or /compact, starts a new session on continuing work, or says 인계, 핸드오프, handoff, 세션 정리, 컨텍스트 정리, 이어서 할게, 지금까지 정리해줘, devlog, 개발일지, 작업로그, 회고, 결정 기록, "지난번에 이거 어떻게 했지", "왜 이렇게 했더라". Also use proactively when context is getting long and the user seems about to lose state, or when they ask what was done in a previous session.
+description: 세션 인계(handoff) 문서 생성, 새 세션 복귀 브리핑, devlog 개발일지 기록/검색, 프로젝트 브리프 작성. Use whenever the user is about to run /clear or /compact, starts a new session on continuing work, or says 인계, 핸드오프, handoff, 세션 정리, 컨텍스트 정리, 이어서 할게, 지금까지 정리해줘, devlog, 개발일지, 작업로그, 회고, 결정 기록, "지난번에 이거 어떻게 했지", "왜 이렇게 했더라". Also use when they want this project explained to someone outside it — 다른 프로젝트에 설명, 다른 에이전트한테 넘겨, 프로젝트 정리해줘, 프로젝트 브리프, 이 프로젝트 파악할 수 있게, 온보딩 문서, project brief, explain this project to another agent. Also use proactively when context is getting long and the user seems about to lose state, or when they ask what was done in a previous session.
 ---
 
 # Session Manager
 
-긴 작업을 세션 경계 너머로 옮기는 스킬. 세 가지 일을 한다: **인계(handoff)**, **복귀(resume)**, **개발일지(devlog)**.
+긴 작업을 세션 경계 너머로 옮기는 스킬. 네 가지 일을 한다: **인계(handoff)**, **복귀(resume)**, **개발일지(devlog)**, **프로젝트 브리프(brief)**.
 
 ## 무엇이 동의를 필요로 하는가
 
@@ -21,6 +21,7 @@ description: 세션 인계(handoff) 문서 생성, 새 세션 복귀 브리핑, 
 ```
 .claude/session/
 ├── handoff-YYYYMMDD-HHMM.md   # 인계 문서 (여러 개 누적)
+├── project-brief.md            # 프로젝트 브리프 (하나만, 계속 갱신)
 ├── devlog.md                   # 이번 달 개발일지 (append only)
 ├── devlog-YYYY-MM.md           # 지난 달들 (훅이 자동 분리)
 └── .devlog-state               # 훅 중복 방지용 커서 (신경 쓸 것 없음)
@@ -31,6 +32,7 @@ description: 세션 인계(handoff) 문서 생성, 새 세션 복귀 브리핑, 
 | 대상 | 정책 | 이유 |
 |---|---|---|
 | handoff | **최근 10개만** 유지, 새로 쓸 때 초과분 삭제 | 복귀는 언제나 최신 하나만 읽는다. 그 이상은 쌓이기만 한다 |
+| project-brief | **하나만** 유지, 다시 쓸 때 갱신 | 프로젝트당 하나면 충분하고, 여러 판본이 있으면 어느 게 맞는지 모른다 |
 | devlog | **영구 보존**, 월별로 분리만 | 회고와 트러블슈팅의 값어치가 "오래된 기록"에서 나온다. 지울 이유가 없다 |
 
 devlog는 합쳐지지 않는다. 월이 바뀔 때 **쪼개지기만** 한다. 검색은 `devlog*.md` 로 전체를 훑으므로 쪼개져 있어도 상관없고, 한 파일이 무한정 커지는 것만 막힌다.
@@ -43,6 +45,7 @@ devlog는 합쳐지지 않는다. 월이 바뀔 때 **쪼개지기만** 한다. 
 |---|---|---|
 | `/jay-new` | handoff 작성 → `/clear` 안내 | 없음. 폴더도 알아서 만든다 |
 | `/jay-init` | devlog 자동 기록 켜기 | 없음 |
+| `/jay-brief` | 프로젝트 브리프 작성·갱신 | 없음 |
 
 복귀·검색·수동 기록은 명령어가 따로 없다. "이어서 하자", "지난주에 그거 어떻게 고쳤지", "이건 남겨줘" 처럼 말하면 이 스킬이 처리한다. `/clear` 자동 인계도 handoff만 있으면 동작하며 devlog와는 무관하다.
 
@@ -205,3 +208,18 @@ grep -B4 '^\*\*결정:' .claude/session/devlog*.md
 ```
 
 기존 내용 위에 이어 붙이기만 한다. 앞선 항목은 건드리지 않는다.
+
+---
+
+## 4. 프로젝트 브리프 (brief)
+
+"이 프로젝트를 다른 프로젝트/에이전트가 알아듣게 정리해줘", "온보딩 문서 만들어줘" 같은 요청. `/jay-brief` 명령과 같은 일이며, **전체 절차와 템플릿은 그 명령 파일에 있다.** 자연어로 들어왔더라도 결과물은 같아야 하므로, 아래 네 가지만 지키고 나머지는 그 절차를 따른다.
+
+- **`.claude/session/project-brief.md` 하나뿐이다.** 프로젝트당 문서 하나. 주제별로 쪼개지 않는다
+- **혼자 완결돼야 한다.** 받는 쪽은 이 저장소를 안 갖고 있을 수 있다. `README 참고` 같은 포인터는 거기서 열 수 없는 주소다. `README.md` 와 `CLAUDE.md` 는 재료로 읽되 내용은 이 파일에 담는다
+- **절 순서는 얕은 것부터.** 한 줄 요약 → 무엇을 하는가 → 구조 → 돌리는 법 → 아키텍처와 설계 결정 → 함정 → 최근 흐름 → 지금 진행 중인 것. 위에서 읽다가 충분해지면 멈출 수 있어야 한다
+- **파일이 이미 있으면 먼저 읽는다.** 갱신이지 재작성이 아니다. 구조·최근 흐름은 git 에서 새로 뽑고, **아키텍처 결정과 함정은 이어받아 덧붙인다** — 저장소로 복구할 수 없는 유일한 부분이라, 새로 쓰면 그때까지 쌓인 것이 통째로 사라진다
+
+`/jay-new` 와 헷갈리지 말 것. 그건 *내가 하던 작업*을 다음 세션에 넘기는 문서고, 이건 *프로젝트 자체*를 밖으로 설명하는 문서다. 진행 중인 작업은 여기서 맨 마지막 한 절이다.
+
+마무리 출력은 절대경로를 박은 복붙 프롬프트다. 받는 쪽은 다른 프로젝트에서 일하므로 작업 폴더가 다르고, 상대경로는 거기서 의미가 없다.
