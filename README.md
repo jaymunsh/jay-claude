@@ -92,6 +92,8 @@ The filename carries a timestamp, so you can't memorize it and can't look it up 
 
 You can narrow the handoff's focus: `/jay-new auth refactor only`
 
+Handing off to another session or agent: `/jay-new hand to another session` — it writes to `docs/handoff-<topic>.md` instead (`.claude/session/` is gitignored, so another clone can't see it) and adds an orientation section up front. If a `CLAUDE.md` exists it points at it rather than copying it, since Claude Code loads that file on its own.
+
 ### What goes in a handoff
 
 Goal, what was done, current state (branch, uncommitted changes, whether it was verified), the command to re-verify it, next steps, and — most importantly — **what you tried that didn't work**.
