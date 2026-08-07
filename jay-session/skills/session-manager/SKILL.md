@@ -128,7 +128,7 @@ devlog는 합쳐지지 않는다. 월이 바뀔 때 **쪼개지기만** 한다. 
 
 `/clear` 직후라면 훅이 최신 handoff의 **경로**를 이미 넣어뒀다. 본문은 안 들어있으니 읽는 것부터 시작한다. 훅이 안 걸린 세션에서 "이어서 하자", "지난번 거 계속" 같은 말이 나오면 1번부터 찾는다:
 
-1. `ls -t .claude/session/handoff-*.md | head -3` 으로 최근 인계 문서를 찾는다.
+1. `ls -t .claude/session/ 2>/dev/null | grep '^handoff-' | head -3` 으로 최근 인계 문서를 찾는다. 없으면 여기서 끝이다 — 인계 문서가 없는 프로젝트에서 부른 것이니 사용자에게 그렇게 말하고 `/jay-new` 를 안내한다. (셸 글롭을 안 쓰는 이유: zsh 는 매치가 없으면 명령 자체를 실패시킨다.)
 2. 가장 최근 것을 읽는다.
 3. **문서가 지금도 맞는지 검증한다.** git 저장소면 `git log --oneline` 과 `git status` 로 그 뒤에 무슨 일이 있었는지 확인한다. 인계 문서는 쓰인 시점의 스냅샷이라, 그 사이 다른 세션이 작업을 진행했을 수 있다. git이 없으면 문서에 적힌 "재개 검증" 명령을 돌려보거나 해당 파일을 직접 읽어 확인한다.
 4. 3~5줄로 브리핑하고 다음 할 일을 제안한다. 문서 전체를 사용자에게 다시 읽어주지 말 것.
@@ -169,7 +169,7 @@ rm .claude/session/devlog.md      # 끄기 (기존 기록을 지우게 되니 �
 "지난주에 그 에러 어떻게 고쳤지", "이 파일 왜 이렇게 됐지" 같은 질문에는 devlog를 검색한다. 기록만 쌓고 안 읽으면 아무 값어치가 없다. 월별로 분리되므로 glob으로 전체를 훑는다:
 
 ```bash
-grep -n -i -B2 -A8 "검색어" .claude/session/devlog*.md | tail -60
+grep -rn -i -B2 -A8 --include='devlog*.md' "검색어" .claude/session/ | tail -60
 ```
 
 파일이 크면 전체를 읽지 말고 grep으로 좁힌 뒤 해당 구간만 `Read` 의 `offset`/`limit` 으로 본다. 회고 요청("이번 주 뭐 했지")이면 타임스탬프로 구간을 잘라 읽고 주제별로 묶어 요약한다 — 항목을 시간순으로 나열하는 건 원본을 읽는 것과 다를 바 없다.
@@ -190,7 +190,7 @@ grep -n -i -B2 -A8 "검색어" .claude/session/devlog*.md | tail -60
 결정만 모아 보려면:
 
 ```bash
-grep -B4 '^\*\*결정:' .claude/session/devlog*.md
+grep -r -B4 --include='devlog*.md' '^\*\*결정:' .claude/session/
 ```
 
 ### 수동 기록

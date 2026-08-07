@@ -154,7 +154,7 @@ claude plugin update jay-session@jay-claude
 나중에 결정만 뽑아보려면:
 
 ```bash
-grep -B4 '^\*\*결정:' .claude/session/devlog*.md
+grep -r -B4 --include='devlog*.md' '^\*\*결정:' .claude/session/
 ```
 
 별도 `decisions.md` 를 두지 않은 건 의도적입니다. 기록 위치가 한 곳이면 "이건 어디 쓰지"를 매번 판단하지 않아도 되고, 그 결정이 어떤 작업 중에 나왔는지가 앞뒤 항목에 같이 남습니다.

@@ -155,7 +155,7 @@ which conflicts with the logout requirement. Scaling handled by Redis.
 Then pull just the decisions out later:
 
 ```bash
-grep -B4 '^\*\*Decision:' .claude/session/devlog*.md
+grep -r -B4 --include='devlog*.md' '^\*\*Decision:' .claude/session/
 ```
 
 There's no separate `decisions.md` on purpose. One place to write means never deciding which file something belongs in, and the surrounding entry carries the context the decision was made in.
