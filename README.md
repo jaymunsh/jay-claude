@@ -89,8 +89,31 @@ The filename carries a timestamp, so you can't memorize it and can't look it up 
 |---|---|---|
 | `/jay-new` | Writes a handoff, then tells you to `/clear` | None — creates the directory on first use |
 | `/jay-init` | Turns on automatic devlog recording for this project | None |
+| `/jay-brief` | Writes a document explaining this project to another project or agent | None |
 
 You can narrow the handoff's focus: `/jay-new auth refactor only`
+
+### `/jay-brief` — explaining this project to another one
+
+`/jay-new` hands *the work you were doing* to your next session. `/jay-brief` explains *the project itself* to someone outside it — an agent in a different project that has never opened this repository.
+
+```
+/jay-brief
+```
+
+No arguments. One document per project.
+
+It reads the repository (`git ls-files`, `git log`, the README, `CLAUDE.md`, the package manifest) and writes `.claude/session/project-brief.md`: what the project does, how it's laid out, why it was built this way, how to run it, where it's been heading lately, and what to watch out for. It's written to **stand on its own** — the reader may not have the repository, so pointers like "see the README" are addresses they can't open.
+
+You get back a prompt with an absolute path in it. **Paste that into the other project's session, then say what you want done.**
+
+```
+/Users/me/projects/foo/.claude/session/project-brief.md read this and get up to speed on the project.
+```
+
+The path is absolute because the reader's working directory is somewhere else entirely; a relative one means nothing there.
+
+**Running it again updates the file.** It reads what's there first rather than overwriting. Sections derived from git — layout, recent direction — get regenerated; **architecture decisions and gotchas are carried forward and added to**, since those are the parts no amount of reading the repo will recover. The `created` line at the top stays; only `last updated` moves.
 
 ### What goes in a handoff
 
@@ -151,6 +174,7 @@ Nothing until you ask for it. `/jay-new` creates the directory on first use, and
 <your project>/.claude/session/
 ├── handoff-20260807-1430.md   # up to 10 kept
 ├── handoff-20260807-1105.md
+├── project-brief.md           # from /jay-brief — one per project, updated in place
 ├── devlog.md                  # current month — its existence is the on/off switch
 ├── devlog-2026-07.md          # previous months, rotated automatically
 └── .devlog-state              # dedup cursor for the hook
@@ -163,6 +187,7 @@ The first time this directory is created you'll be asked once whether to add `.c
 | What | Policy | Why |
 |---|---|---|
 | **Handoffs** | Keep the newest **10**; older ones are removed when a new one is written | Resuming only ever reads the latest one. Beyond that they just pile up |
+| **Project brief** | One file, updated in place | One per project is enough; multiple versions just raise the question of which is current |
 | **Devlog** | **Kept forever**, only split by month | The value of a devlog is in the old entries. There's no reason to delete them |
 
 **The devlog is not one file per day.** Entries accumulate inside a single file as `## 2026-08-07 14:30 — ...`, and only when the month changes does everything so far get moved to `devlog-2026-07.md`.
