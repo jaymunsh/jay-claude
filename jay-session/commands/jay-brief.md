@@ -35,8 +35,9 @@ git 저장소가 아니면 구조는 `ls -R`(숨김·의존성 폴더 제외)로
 
 ```bash
 # 글롭을 셸이 아니라 grep 이 처리한다 — zsh 는 매치가 없으면 명령 자체를 실패시킨다
-grep -rh -A4  --include='devlog*.md'   '^\*\*결정:' .claude/session/   # → "아키텍처와 설계 결정"
-grep -rh -A20 --include='handoff-*.md' '^## 함정'    .claude/session/   # → "함정"
+# 2>/dev/null: .claude/session/ 자체가 없는 프로젝트가 정상 경로다 (아래 참고)
+grep -rh -A4  --include='devlog*.md'   '^\*\*결정:' .claude/session/ 2>/dev/null   # → "아키텍처와 설계 결정"
+grep -rh -A20 --include='handoff-*.md' '^## 함정'    .claude/session/ 2>/dev/null   # → "함정"
 ```
 
 **둘 다 없는 게 정상인 경로다.** devlog는 `/jay-init` 으로 켜야 쌓이고 handoff는 `/jay-new` 를 쳐야 생긴다. 없으면 조용히 넘어가고, 그 사실을 문서에 적지 않는다.

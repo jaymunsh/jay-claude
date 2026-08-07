@@ -67,7 +67,7 @@ devlog는 합쳐지지 않는다. 월이 바뀔 때 **쪼개지기만** 한다. 
    파일명의 시각은 **반드시 `date "+%Y%m%d-%H%M"` 를 실행해서 쓴다.** 짐작해서 적지 않는다. 실제로 01:06에 쓴 문서에 `2115` 가 박힌 적이 있고, 정렬이 mtime 기준이라 훅은 멀쩡히 돌아서 아무도 못 잡았다. 파일명만 보면 순서가 거꾸로 보인다.
 4. **오래된 인계 문서를 정리한다.** 최근 10개만 남긴다:
    ```bash
-   ls -t .claude/session/handoff-*.md | tail -n +11 | xargs rm -f --
+   ls -t .claude/session | grep '^handoff-' | tail -n +11 | xargs -I{} rm -f .claude/session/{}
    ```
    복귀할 때 읽는 건 언제나 최신 하나뿐이라 그 이상은 쌓이기만 한다. 지운 개수가 있으면 마무리 보고에 한 줄로 언급한다 — 조용히 지우면 나중에 "분명 있었는데"가 된다.
 5. **불확실한 것만 확인한다.** "다음 단계를 A로 적었는데 맞나요?" 정도. 전부 다 되물으면 인계의 의미가 없다.
@@ -169,7 +169,7 @@ rm .claude/session/devlog.md      # 끄기 (기존 기록을 지우게 되니 �
 "지난주에 그 에러 어떻게 고쳤지", "이 파일 왜 이렇게 됐지" 같은 질문에는 devlog를 검색한다. 기록만 쌓고 안 읽으면 아무 값어치가 없다. 월별로 분리되므로 glob으로 전체를 훑는다:
 
 ```bash
-grep -rn -i -B2 -A8 --include='devlog*.md' "검색어" .claude/session/ | tail -60
+grep -rn -i -B2 -A8 --include='devlog*.md' "검색어" .claude/session/ 2>/dev/null | tail -60
 ```
 
 파일이 크면 전체를 읽지 말고 grep으로 좁힌 뒤 해당 구간만 `Read` 의 `offset`/`limit` 으로 본다. 회고 요청("이번 주 뭐 했지")이면 타임스탬프로 구간을 잘라 읽고 주제별로 묶어 요약한다 — 항목을 시간순으로 나열하는 건 원본을 읽는 것과 다를 바 없다.
@@ -190,7 +190,7 @@ grep -rn -i -B2 -A8 --include='devlog*.md' "검색어" .claude/session/ | tail -
 결정만 모아 보려면:
 
 ```bash
-grep -r -B4 --include='devlog*.md' '^\*\*결정:' .claude/session/
+grep -r -B4 --include='devlog*.md' '^\*\*결정:' .claude/session/ 2>/dev/null
 ```
 
 ### 수동 기록

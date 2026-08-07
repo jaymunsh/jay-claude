@@ -21,7 +21,7 @@ $ARGUMENTS 가 있으면 그게 **다음 세션의 주제**다. "다음에 할 �
 문서를 쓴 뒤 오래된 인계 문서를 정리한다 — 최근 10개만 남긴다:
 
 ```bash
-ls -t .claude/session/handoff-*.md | tail -n +11 | xargs rm -f --
+ls -t .claude/session | grep '^handoff-' | tail -n +11 | xargs -I{} rm -f .claude/session/{}
 ```
 
 지운 게 있으면 마무리 보고에 한 줄로 언급한다. 조용히 지우면 나중에 "분명 있었는데"가 된다.
