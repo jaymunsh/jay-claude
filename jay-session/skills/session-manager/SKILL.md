@@ -121,7 +121,7 @@ devlog는 합쳐지지 않는다. 월이 바뀔 때 **쪼개지기만** 한다. 
 
 ## 2. 복귀 (resume)
 
-`/clear` 직후라면 훅이 이미 handoff 내용을 주입해뒀다. 그게 아니고 새 세션에서 "이어서 하자", "지난번 거 계속" 같은 말이 나오면:
+`/clear` 직후라면 훅이 최신 handoff의 **경로**를 이미 넣어뒀다. 본문은 안 들어있으니 읽는 것부터 시작한다. 훅이 안 걸린 세션에서 "이어서 하자", "지난번 거 계속" 같은 말이 나오면 1번부터 찾는다:
 
 1. `ls -t .claude/session/handoff-*.md | head -3` 으로 최근 인계 문서를 찾는다.
 2. 가장 최근 것을 읽는다.
@@ -153,7 +153,7 @@ rm .claude/session/devlog.md      # 끄기 (기존 기록을 지우게 되니 �
 |---|---|
 | `Stop` | 끝난 턴을 devlog에 append. 월이 바뀌면 지난 달치를 `devlog-YYYY-MM.md` 로 분리 |
 | `PreCompact` | 압축 시점과 압축 전 원본 transcript 경로를 devlog에 남김 |
-| `SessionStart` | `/clear` 직후 최신 handoff를 나이("31일 전")와 함께 새 세션에 주입 |
+| `SessionStart` | `/clear` 직후 최신 handoff의 **경로와 나이**("31일 전")만 주입. 본문은 필요할 때 읽는다 |
 
 `PreCompact` 가 스냅샷이 아니라 경로만 남기는 이유: 압축은 모델의 컨텍스트만 지우고 transcript 파일은 디스크에 그대로 남는다. 그래서 보험으로 필요한 건 사본이 아니라 "원본이 어디 있는지"다. auto-compact가 예고 없이 터진 뒤에도 되짚어 갈 길이 생긴다.
 

@@ -57,7 +57,7 @@ Two commands you type, and one thing that happens on its own.
   > /clear                     ← you type this yourself
 
 ── Session 2 ──────────────────────────────────
-  (the handoff is already loaded into context)
+  (the handoff's location is already in context)
 
   > paste the prompt above   or just   "keep going"
 
@@ -69,7 +69,7 @@ Two commands you type, and one thing that happens on its own.
 **Either input works.**
 
 - **The copied prompt** — it has the file path baked in, so that one line stands on its own. It works even if the hook didn't fire for any reason.
-- **"keep going"** — the hook already put the handoff in context, so two words are enough.
+- **"keep going"** — the hook already put the handoff's path in context, so two words are enough. Claude reads the file at that point.
 
 The filename carries a timestamp, so you can't memorize it and can't look it up once the conversation is gone. That's why `/jay-new` gives you the prompt **with the real filename already in it** — you just copy it.
 
@@ -180,14 +180,16 @@ Three hooks, one script.
 | Hook | Fires when | Does |
 |---|---|---|
 | `Stop` | Every turn ends | Appends to the devlog, rotates monthly. Exits instantly if the devlog is off |
-| `SessionStart` (`clear`, `compact`) | Right after the conversation is discarded | Injects the newest handoff along with its age. On `clear` it briefs you and asks where to start; on `compact` it lands as reference only, so work in flight isn't interrupted |
+| `SessionStart` (`clear`, `compact`) | Right after the conversation is discarded | Injects **only the path and age** of the newest handoff. On `clear` Claude reads it, briefs you, and asks where to start; on `compact` it opens the file only if the summary dropped something |
 | `PreCompact` | Context is about to be compacted | Records where the uncompacted transcript lives |
 
 **There's no time limit.** Instead the handoff arrives labeled with how old it is — "방금" (just now), "5시간 전" (5 hours ago), "31일 전" (31 days ago). If it's more than a day old, Claude confirms you actually mean to resume that work before diving in, since you may have cleared in order to start something unrelated.
 
 There's deliberately no cutoff constant. A "handoffs expire after N minutes" rule is one more thing you'd have to remember, and whether a document is stale is a judgment the age already supports.
 
-**`PreCompact` saves a path, not a snapshot,** on purpose. Compaction only clears the model's context — the transcript file stays on disk. What you need afterwards is a pointer to it, not a copy of it.
+**`SessionStart` passes a path, not the document,** on purpose. The hook fires on every clear — including the ones where you wiped the context precisely to go do something else. Injecting the body there means inhaling a few thousand tokens and throwing them away. A path costs two lines, and you read the file only when you're actually continuing.
+
+**`PreCompact` saves a path, not a snapshot,** for the same reason. Compaction only clears the model's context — the transcript file stays on disk. What you need afterwards is a pointer to it, not a copy of it.
 
 **The split between skill and hook** follows what can be forgotten. Judgment work (what belongs in a handoff, how to summarize a search) lives in the `session-manager` skill. Mechanical work lives in the hooks, because "remember to log every turn" is exactly the kind of instruction that quietly stops happening once a session gets long.
 

@@ -167,15 +167,19 @@ def describe_age(delta):
 
 
 def on_session_start(data):
-    """대화가 지워진 직후, 가장 최근 handoff 를 새 컨텍스트에 물려준다.
+    """대화가 지워진 직후, 가장 최근 handoff 의 위치만 알려준다.
+
+    본문을 넣지 않는 이유: 이 훅은 이어서 할 때뿐 아니라 무관한 작업을 하려고
+    지운 경우에도 똑같이 터진다. 본문까지 밀어넣으면 안 읽을 문서를 매번 수천
+    토큰어치 들이마신 뒤 버리게 된다. 경로만 있으면 이어서 할 때 그때 읽으면 된다.
 
     시간 제한을 두지 않는 대신 문서가 얼마나 오래됐는지를 함께 넘긴다.
     임의의 컷오프는 사용자가 외워야 할 규칙을 하나 늘릴 뿐이고, 오래된 문서인지는
     나이를 보고 판단하면 되는 일이다.
 
-    clear 와 compact 는 상황이 다르다. clear 뒤에는 아무것도 없으니 브리핑하고
-    다음 할 일을 물어야 하지만, compact 뒤에는 압축 요약이 이미 있고 작업이
-    진행 중이다. 거기서 처음부터 브리핑하면 하던 일을 끊는다.
+    clear 와 compact 는 상황이 다르다. clear 뒤에는 아무것도 없으니 읽고 브리핑해야
+    하지만, compact 뒤에는 압축 요약이 이미 있고 작업이 진행 중이다. 거기서 처음부터
+    브리핑하면 하던 일을 끊는다.
     """
     source = data.get("source")
     if source not in ("clear", "compact"):
@@ -187,24 +191,22 @@ def on_session_start(data):
     age = describe_age(datetime.now() - datetime.fromtimestamp(latest.stat().st_mtime))
     if source == "clear":
         guidance = (
-            f"검증 후 3~5줄로 브리핑하고 '다음에 할 일' 1번부터 시작할지 물어보세요. "
-            f"다만 이 문서는 {age} 것이므로, 하루 이상 지났다면 사용자가 정말 이 작업을 "
-            "이어서 하려는 게 맞는지부터 확인하세요 — 무관한 작업을 하려고 /clear 했을 수도 있습니다."
+            "이어서 하시려면 이 파일을 읽고, git 저장소면 git status / git log 로 지금도 "
+            "유효한지 검증한 뒤 3~5줄로 브리핑하고 '다음에 할 일' 1번부터 시작할지 물어보세요. "
+            f"이 문서는 {age} 것이라, 하루 이상 지났다면 사용자가 정말 이 작업을 이어서 하려는 게 "
+            "맞는지부터 확인하세요 — 무관한 작업을 하려고 지웠을 수도 있습니다. "
+            "무관한 작업이면 읽지 말고 무시하세요."
         )
     else:
         guidance = (
             "컨텍스트 압축 직후라 하던 작업이 그대로 이어지는 중입니다. "
-            "이 문서는 압축 요약이 흘린 것을 메우는 참고 자료이지 새 지시가 아닙니다. "
-            "브리핑하거나 다음 할 일을 다시 묻지 말고, 하던 일을 계속하세요. "
-            "요약과 이 문서가 어긋나면 그때만 짚으세요."
+            "브리핑하거나 다음 할 일을 다시 묻지 마세요. "
+            "압축 요약에서 빠진 게 있다 싶을 때만 이 파일을 열어보면 됩니다."
         )
     print(json.dumps({"hookSpecificOutput": {
         "hookEventName": "SessionStart",
         "additionalContext": (
-            f"이전 세션의 인계 문서입니다 ({latest}, {age} 작성).\n"
-            "git 저장소면 git status / git log 로 이 문서가 지금도 유효한지 먼저 확인하세요. "
-            "인계 문서는 쓰인 시점의 스냅샷이라 그 사이 다른 세션이 작업을 진행했을 수 있습니다.\n"
-            + guidance + "\n\n---\n" + latest.read_text()
+            f"이전 세션의 인계 문서가 있습니다: {latest} ({age} 작성)\n" + guidance
         ),
     }}))
 
@@ -223,7 +225,9 @@ def main():
 
 
 def selftest():
+    import io
     import tempfile
+    from contextlib import redirect_stdout
 
     entries = [
         {"uuid": "a", "type": "user", "message": {"content": "<system-reminder>noise</system-reminder>토큰 만료 처리 추가해줘"}},
@@ -256,6 +260,32 @@ def selftest():
     assert describe_age(timedelta(minutes=59)) == "방금"
     assert describe_age(timedelta(hours=5)) == "5시간 전"
     assert describe_age(timedelta(days=32, hours=2)) == "32일 전"
+
+    # SessionStart 는 경로만 넘기고 본문은 넘기지 않는다. 본문을 다시 끼워넣는
+    # 회귀가 이 훅에서 제일 비싸다 — 이어서 하지 않는 /clear 마다 통째로 낭비된다.
+    with tempfile.TemporaryDirectory() as d:
+        sess = Path(d) / ".claude" / "session"
+        sess.mkdir(parents=True)
+        (sess / "handoff-20260807-1430.md").write_text("본문표식\n")
+        def ctx(source):
+            buf = io.StringIO()
+            with redirect_stdout(buf):
+                on_session_start({"source": source, "cwd": d})
+            out = buf.getvalue()
+            if not out.strip():
+                return None
+            return json.loads(out)["hookSpecificOutput"]["additionalContext"]
+        for source in ("clear", "compact"):
+            c = ctx(source)
+            assert "handoff-20260807-1430.md" in c, c
+            assert "본문표식" not in c, c
+            assert len(c) < 500, len(c)
+        assert "시작할지 물어보세요" in ctx("clear")
+        assert "묻지 마세요" in ctx("compact")
+        assert ctx("startup") is None
+        (sess / "handoff-20260807-1430.md").unlink()
+        assert ctx("clear") is None
+
     print("ok")
 
 
